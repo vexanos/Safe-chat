@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Safe Chat – Private real-time chat</title>
+<style>
+:root{--bg:#000;--card:#0a0a0a;--panel:#1a1a1a;--text:#fff;--mute:#9a9a9a;--line:#262626;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font-family:inherit;color:inherit}
+.logo{width:26px;height:26px;flex:none}
+.app{height:100%;max-width:900px;margin:0 auto;display:flex;flex-direction:column;border-left:1px solid var(--line);border-right:1px solid var(--line);box-sizing:border-box}
+.pages{flex:1;position:relative;min-height:0}
+.page{position:absolute;inset:0;display:flex;flex-direction:column;min-height:0}
+.hide{display:none!important}
+.btn{background:none;border:1px solid #444;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.btn.p{background:#fff;border-color:#fff;color:#000}
+.btn:disabled{opacity:.5}
+nav{display:flex;border-top:1px solid var(--line);background:#000}
+nav button{flex:1;background:none;border:0;padding:9px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;color:#777;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+nav button svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linejoin:round;stroke-linecap:round}
+nav button.on{color:#fff}
+nav button.on svg{fill:#fff;stroke:#fff}
+nav button.on svg .k{stroke:#000}
+/* home */
+#home{background:radial-gradient(ellipse at 75% 15%,#3a3a3a 0%,#111 38%,#000 70%);overflow:hidden}
+#home::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 2px,transparent 2px 14px);pointer-events:none}
+#home>*{position:relative}
+.htop{display:flex;align-items:center;gap:10px;padding:18px 22px 0;font-weight:800;letter-spacing:.22em;font-size:13px;text-transform:uppercase}
+.hero{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 22px 26px}
+.tag{font-size:12px;letter-spacing:.28em;color:var(--mute);text-transform:uppercase;margin-bottom:10px}
+.hero h1{margin:0;font-family:Impact,"Arial Narrow Bold","Helvetica Neue",Arial,sans-serif;font-weight:900;text-transform:uppercase;font-size:clamp(84px,26vw,220px);line-height:.82}
+.hero h1 span{display:block}.hero h1 span+span{-webkit-text-stroke:2px #fff;color:transparent}
+.sub{margin:18px 0 22px;max-width:420px;color:#c8c8c8;font-size:15px;line-height:1.5}
+#enter{align-self:flex-start;padding:13px 26px;font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.strip{border-top:3px solid #fff;padding:12px 22px;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#cfcfcf}
+.strip i{font-style:normal;color:#666}
+/* inbox */
+.top{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.who{background:none;border:0;font-size:20px;font-weight:800;flex:1;text-align:left;cursor:pointer;padding:0}
+.sf{display:flex;gap:8px;padding:12px 16px 4px}
+input{flex:1;min-width:0;font-size:16px;padding:10px 16px;border-radius:22px;border:1px solid #333;background:var(--panel);color:#fff;outline:none;box-sizing:border-box}
+input:focus{border-color:#fff}
+.qerr{padding:2px 18px;font-size:13px;min-height:16px;color:#fff;font-weight:600}
+.h2{padding:6px 16px 4px;font-weight:700;font-size:15px}
+#rows{flex:1;overflow-y:auto}
+.row{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:10px 16px;text-align:left;cursor:pointer}
+.row:active{background:#111}
+.av{width:46px;height:46px;border-radius:50%;background:#222;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;box-sizing:border-box}
+.rb{flex:1;min-width:0}.rt{font-weight:700;font-size:15px}.rs{color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtime{font-size:12px;color:var(--mute)}
+.empty{margin:auto;padding:24px;color:var(--mute);text-align:center;font-size:14px}
+/* thread */
+.back{background:none;border:0;font-size:32px;line-height:1;padding:0 6px 4px 0;cursor:pointer}
+.top .av{width:36px;height:36px;font-size:14px}
+#list{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:4px}
+.m{max-width:75%;padding:9px 14px;border-radius:20px;background:var(--panel);align-self:flex-start;overflow-wrap:anywhere}
+.m.me{align-self:flex-end;background:#fff;color:#000}
+.n{font-size:11px;color:var(--mute);margin-bottom:2px}.m.me .n{color:#555}
+.t{font-size:10px;opacity:.55;text-align:right;margin-top:2px}
+.d{align-self:center;font-size:11px;color:var(--mute);margin:8px 0;letter-spacing:.1em;text-transform:uppercase}
+#older{align-self:center}
+#f{display:flex;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
+#f button{background:none;border:0;font-weight:800;font-size:15px;padding:8px;cursor:pointer}
+/* overlays */
+.ov{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;z-index:50;text-align:center}
+.ov.sm{background:rgba(0,0,0,.8)}
+.box{background:var(--card);border:1px solid #444;border-radius:16px;padding:20px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box}
+.ov h1{margin:0;font-size:26px;letter-spacing:.14em;text-transform:uppercase}.ov p{margin:0;color:var(--mute);font-size:14px}
+#err{color:#fff;font-size:13px;min-height:16px;font-weight:600}
+.tabs{display:flex;border:1px solid #444;border-radius:22px;overflow:hidden}
+.tabs button{background:none;border:0;padding:9px 18px;font-size:13px;font-weight:700;color:#777;cursor:pointer}
+.tabs button.on{background:#fff;color:#000}
+.who{cursor:default}
+.st{align-self:flex-end;font-size:11px;color:var(--mute);margin:0 6px 4px}
+.m.typing{color:#bbb;font-size:13px;animation:pl 1.2s infinite}
+@keyframes pl{50%{opacity:.35}}
+.av,.navav{background-size:cover;background-position:center}
+.navav{width:26px;height:26px;border-radius:50%;background-color:#222;border:2px solid #777;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;box-sizing:border-box;letter-spacing:0;color:#fff}
+nav button.on .navav{border-color:#fff}
+.pbody{flex:1;overflow-y:auto;padding:16px}
+.phead{display:flex;align-items:center;gap:18px;margin-bottom:14px}
+.avbig{position:relative;width:92px;height:92px;border-radius:50%;background:#222 center/cover;border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;flex:none;box-sizing:border-box}
+.plus{position:absolute;right:-4px;bottom:-4px;width:30px;height:30px;border-radius:50%;background:#fff;color:#000;border:3px solid #000;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;cursor:pointer;box-sizing:border-box;line-height:1}
+.pname{font-size:20px;font-weight:800;overflow-wrap:anywhere}.pbio{color:#c8c8c8;font-size:14px;margin-top:4px;overflow-wrap:anywhere}
+.prow{display:flex;gap:8px;margin:12px 0 4px}.prow .btn{flex:1;padding:10px}
+.pform{display:flex;flex-direction:column;gap:8px;margin:10px 0 18px}
+.pform input{flex:none}
+.msg{font-size:13px;min-height:16px;font-weight:600}
+nav button{position:relative}
+#tChat.unr::after{content:"";position:absolute;top:7px;left:calc(50% + 9px);width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #000;box-sizing:border-box}
+.row.unread .rt,.row.unread .rs{color:#fff;font-weight:800}
+.dot{width:10px;height:10px;border-radius:50%;background:#fff;flex:none}
+.st{display:flex;align-items:center;gap:5px}
+.st .av{width:15px;height:15px;border-width:1px;font-size:8px}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="pages">
+  <section class="page" id="home">
+   <div class="htop"><svg class="logo" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.5l8 3v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10v-6z"/><path d="M8.5 12l2.4 2.4 4.6-4.8"/></svg>Safe Chat</div>
+   <div class="hero">
+    <div class="tag">Private · Real-time · Simple</div>
+    <h1><span>Safe</span><span>Chat</span></h1>
+    <p class="sub">Message your friends one-to-one, like Instagram. Pick a unique username, search a friend, and your chats are always saved.</p>
+    <button class="btn p" id="enter">Open chat →</button>
+   </div>
+   <div class="strip">Direct messages <i>|</i> Unique usernames <i>|</i> Chat history <i>|</i> Share link</div>
+  </section>
+  <section class="page hide" id="inbox">
+   <div class="top"><div class="who" id="who">@username</div><button class="btn" id="shareBtn">Share</button></div>
+   <form class="sf" id="sf"><input id="q" maxlength="20" placeholder="Search username to message" autocomplete="off" autocapitalize="off"><button class="btn p" type="submit">Message</button></form>
+   <div class="qerr" id="qerr"></div>
+   <div class="h2">Messages</div>
+   <div id="rows"></div>
+  </section>
+  <section class="page hide" id="thread">
+   <div class="top"><button class="back" id="back">‹</button><div class="av" id="tAv"></div><b id="tName"></b></div>
+   <div id="list"></div>
+   <form id="f"><input id="msg" maxlength="500" placeholder="Message…" autocomplete="off"><button type="submit">Send</button></form>
+  </section>
+  <section class="page hide" id="profile">
+   <div class="top"><div class="who" id="pTitle">@username</div><button class="btn" id="pShare">Share profile</button></div>
+   <div class="pbody">
+    <div class="phead">
+     <div class="avbig" id="pAv"><span id="pAvT"></span><label class="plus" for="file">+</label></div>
+     <div><div class="pname" id="pName"></div><div class="pbio" id="pBio"></div></div>
+    </div>
+    <input type="file" id="file" accept="image/*" class="hide">
+    <div class="prow"><button class="btn" id="editBtn">Edit profile</button><button class="btn" id="pLogout">Log out</button></div>
+    <form id="ef" class="pform hide"><input id="eName" maxlength="30" placeholder="Display name" autocomplete="off"><input id="eBio" maxlength="150" placeholder="Bio" autocomplete="off"><div id="eErr" class="msg"></div><button class="btn p" type="submit" style="padding:11px">Save</button></form>
+    <div class="h2" style="padding-left:0">Password</div>
+    <form id="pf" class="pform"><input id="cp" type="password" placeholder="Current password" autocomplete="current-password"><input id="np" type="password" placeholder="New password (min 6 characters)" autocomplete="new-password"><input id="np2" type="password" placeholder="Confirm new password" autocomplete="new-password"><div id="pErr" class="msg"></div><button class="btn p" type="submit" style="padding:11px">Change password</button></form>
+   </div>
+  </section>
+ </div>
+ <nav id="nav">
+  <button id="tHome" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>Home</button>
+  <button id="tChat"><svg viewBox="0 0 24 24"><path d="M21 3L3 10l7 4 4 7z"/><path class="k" d="M21 3L10 14"/></svg>Chat</button>
+  <button id="tProf"><span class="navav" id="navAv">?</span>Profile</button>
+ </nav>
+</div>
+<div class="ov hide" id="join">
+ <h1>Safe Chat</h1>
+ <div class="tabs"><button id="tLogin" class="on">Log in</button><button id="tSign">Create account</button></div>
+ <div class="box">
+  <input id="nm" maxlength="20" placeholder="Username (3–20 letters, numbers, _)" autocomplete="username" autocapitalize="off">
+  <input id="pw" type="password" maxlength="64" placeholder="Password (min 6 characters)" autocomplete="current-password">
+  <input id="pw2" class="hide" type="password" maxlength="64" placeholder="Confirm password" autocomplete="new-password">
+  <div id="err"></div>
+  <button class="btn p" id="go" style="padding:11px">Log in</button>
+  <button class="btn" id="cancel">Cancel</button>
+ </div>
+</div>
+<div class="ov sm hide" id="share">
+ <div class="box">
+  <b>Share this app</b>
+  <p>Send this link to your friends.</p>
+  <input id="lnk" readonly>
+  <button class="btn p" id="copy" style="padding:11px">Copy link</button>
+  <button class="btn" id="close">Close</button>
+ </div>
+</div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,updateProfile,updatePassword,reauthenticateWithCredential,EmailAuthProvider,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getDatabase,ref,push,set,get,onValue,query,orderByChild,limitToLast,runTransaction,onDisconnect,remove} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// ====== PASTE YOUR FIREBASE CONFIG HERE (see README.md) ======
+const firebaseConfig = {
+  apiKey: "AIzaSyDChShtwoWzKpxc6d-KnwRg2tZgX5y200M",
+  authDomain: "safe-chat-7a681.firebaseapp.com",
+  databaseURL: "https://safe-chat-7a681-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "safe-chat-7a681",
+  appId: "1:184130790897:web:0dcc623fb572932b9bd050"
+};
+// =============================================================
+
+const LINK=location.href.split("#")[0];
+let db=null;
+const lst=(s)=>{const i=[];s.forEach(c=>{i.push(c.val())});return i};
+let auth=null,busy=false;const profCache={};
+const emailOf=n=>n.toLowerCase()+"@safechat.app";
+async function handleUser(u){
+  if(u&&!u.isAnonymous){
+    myId=u.uid;const n=u.displayName||(u.email||"").split("@")[0];
+    set(ref(db,"usernames/"+n.toLowerCase()),{uid:u.uid,name:n}).catch(()=>{});
+    enter(n);
+  }else if(u){await signOut(auth)}
+  else if(name)leave();
+}
+const A={
+  signup:async(n,p)=>{
+    if(!db)return bootErr||"Not connected. Check your Firebase config.";
+    busy=true;let c=null;
+    try{
+      c=await createUserWithEmailAndPassword(auth,emailOf(n),p);
+      try{await set(ref(db,"usernames/"+n.toLowerCase()),{uid:c.user.uid,name:n})}
+      catch(e){await c.user.delete().catch(()=>{});busy=false;return "That username is already taken."}
+      await updateProfile(c.user,{displayName:n});
+      busy=false;await handleUser(auth.currentUser);return "";
+    }catch(e){
+      busy=false;
+      if(e.code==="auth/email-already-in-use")return "That username is already taken.";
+      if(e.code==="auth/weak-password")return "Password is too weak (min 6 characters).";
+      if(e.code==="auth/operation-not-allowed")return "Email/Password sign-in is not enabled in Firebase.";
+      return "Could not create account ("+(e.code||"error")+").";
+    }
+  },
+  login:async(n,p)=>{
+    if(!db)return bootErr||"Not connected. Check your Firebase config.";
+    busy=true;
+    try{await signInWithEmailAndPassword(auth,emailOf(n),p);busy=false;await handleUser(auth.currentUser);return ""}
+    catch(e){
+      busy=false;
+      if(["auth/invalid-credential","auth/user-not-found","auth/wrong-password"].includes(e.code))return "Wrong username or password.";
+      if(e.code==="auth/too-many-requests")return "Too many attempts. Try again later.";
+      if(e.code==="auth/operation-not-allowed")return "Email/Password sign-in is not enabled in Firebase.";
+      return "Could not log in ("+(e.code||"error")+").";
+    }
+  },
+  logout:()=>signOut(auth),
+  setTyping:(cid,on)=>{try{const r=ref(db,"dms/"+cid+"/typing/"+myId);if(on){onDisconnect(r).remove();return set(r,true).catch(()=>{})}return remove(r).catch(()=>{})}catch(e){}},
+  listenTyping:(cid,uid,cb)=>onValue(ref(db,"dms/"+cid+"/typing/"+uid),s=>cb(!!s.val()),()=>{}),
+  listenSeen:(cid,uid,cb)=>onValue(ref(db,"dms/"+cid+"/seen/"+uid),s=>{const v=s.val();cb(v&&typeof v==="object"?{t:+v.t||0,at:+v.at||0}:{t:+v||0,at:0})},()=>{}),
+  markSeen:(cid,t)=>{set(ref(db,"dms/"+cid+"/seen/"+myId),{t,at:Date.now()}).catch(()=>{});set(ref(db,"inbox/"+myId+"/"+cid+"/seenT"),t).catch(()=>{})},
+  getProfile:(uid,fresh)=>{if(fresh||!profCache[uid])profCache[uid]=get(ref(db,"profiles/"+uid)).then(s=>s.val()||{}).catch(()=>({}));return profCache[uid]},
+  saveProfile:async d=>{await set(ref(db,"profiles/"+myId),{name:d.name||"",bio:d.bio||"",photo:d.photo||""});profCache[myId]=Promise.resolve(d)},
+  changePassword:async(cur,np)=>{
+    try{const u=auth.currentUser;await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,cur));await updatePassword(u,np);return ""}
+    catch(e){
+      if(["auth/invalid-credential","auth/wrong-password"].includes(e.code))return "Current password is wrong.";
+      if(e.code==="auth/weak-password")return "New password is too weak (min 6 characters).";
+      if(e.code==="auth/too-many-requests")return "Too many attempts. Try again later.";
+      return "Could not change password ("+(e.code||"error")+").";
+    }
+  },
+  findUser:async k=>{const s=await get(ref(db,"usernames/"+k));return s.exists()?s.val():null},
+  ensureDM:async(cid,me,other)=>{try{await set(ref(db,"dms/"+cid+"/meta"),{a:me,b:other})}catch(e){}},
+  listenPublic:(n,cb)=>onValue(query(ref(db,"messages"),orderByChild("t"),limitToLast(n)),s=>cb(lst(s)),()=>{}),
+  listenDM:(cid,n,cb)=>onValue(query(ref(db,"dms/"+cid+"/msgs"),orderByChild("t"),limitToLast(n)),s=>cb(lst(s)),()=>{}),
+  sendPublic:m=>push(ref(db,"messages"),m),
+  sendDM:async(cid,m,x)=>{
+    await push(ref(db,"dms/"+cid+"/msgs"),m);
+    const l=m.text.slice(0,60),t=m.t;
+    await Promise.all([
+      set(ref(db,"inbox/"+x.myId+"/"+cid),{cid,with:x.otherName,withUid:x.otherUid,last:"You: "+l,t,from:x.myId}),
+      set(ref(db,"inbox/"+x.otherUid+"/"+cid),{cid,with:x.myName,withUid:x.myId,last:l,t,from:x.myId})
+    ]);
+  },
+  listenInbox:(id,cb)=>onValue(ref(db,"inbox/"+id),s=>cb(lst(s)),()=>{})
+};
+
+const $=i=>document.getElementById(i);
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||"";localStorage.setItem(k,v)}catch(e){return ""}};
+const key=n=>n.toLowerCase();
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e};
+const stop=f=>{if(typeof f==="function")f()};
+let name="",myId="",limit=50,unsub=null,inboxUnsub=null,cur=null,older=false,bootErr="";
+let me={name:"",bio:"",photo:""};
+let lastItems=[],lastMore=false,otherSeen={t:0,at:0},otherTyping=false,mySeenSent=0,typOn=false,typTimer=null,typUnsub=null,seenUnsub=null;
+
+function show(v){
+  ["home","inbox","thread","profile"].forEach(p=>$(p).classList.toggle("hide",p!==v));
+  $("tHome").classList.toggle("on",v==="home");$("tChat").classList.toggle("on",v==="inbox"||v==="thread");$("tProf").classList.toggle("on",v==="profile");
+  $("nav").classList.toggle("hide",v==="thread");
+  if(v==="profile")renderProfile();
+}
+const setAv=(e,p)=>{e.style.backgroundImage=p?'url("'+p+'")':""};
+function avFor(uid,letter){
+  const a=el("div","av",letter);
+  if(uid)A.getProfile(uid).then(p=>{if(p&&p.photo){setAv(a,p.photo);a.textContent=""}});
+  return a;
+}
+function paintNav(){$("navAv").textContent=me.photo?"":(name||"?")[0].toUpperCase();setAv($("navAv"),me.photo)}
+function renderProfile(){
+  $("pTitle").textContent="@"+name;$("pName").textContent=me.name||name;$("pBio").textContent=me.bio||"No bio yet.";
+  $("pAvT").textContent=me.photo?"":(name||"?")[0].toUpperCase();setAv($("pAv"),me.photo);
+  $("eName").value=me.name||name;$("eBio").value=me.bio||"";
+}
+function openJoin(){setMode("login");$("err").textContent=bootErr;$("join").classList.remove("hide")}
+function goChat(){if(!name){openJoin();return}show("inbox")}
+$("tHome").onclick=()=>show("home");
+$("tChat").onclick=goChat;
+$("tProf").onclick=()=>{if(!name){openJoin();return}show("profile")};
+$("enter").onclick=goChat;
+
+let mode="login";
+function setMode(m){
+  mode=m;$("tLogin").classList.toggle("on",m==="login");$("tSign").classList.toggle("on",m==="sign");
+  $("pw2").classList.toggle("hide",m!=="sign");$("go").textContent=m==="sign"?"Create account":"Log in";
+  $("pw").autocomplete=m==="sign"?"new-password":"current-password";$("err").textContent="";
+}
+$("tLogin").onclick=()=>setMode("login");
+$("tSign").onclick=()=>setMode("sign");
+async function submitAuth(){
+  const v=$("nm").value.trim(),p=$("pw").value;$("err").textContent="";
+  if(!/^[a-zA-Z0-9_]{3,20}$/.test(v)){$("err").textContent="Username: 3–20 letters, numbers or underscores.";return}
+  if(p.length<6){$("err").textContent="Password must be at least 6 characters.";return}
+  if(mode==="sign"&&p!==$("pw2").value){$("err").textContent="Passwords do not match.";return}
+  $("go").disabled=true;
+  const e=mode==="sign"?await A.signup(v,p):await A.login(v,p);
+  $("go").disabled=false;
+  if(e){$("err").textContent=e;return}
+  $("pw").value="";$("pw2").value="";show("inbox");
+}
+function enter(n){
+  name=n;$("who").textContent="@"+n;
+  const waiting=!$("join").classList.contains("hide");
+  $("join").classList.add("hide");if(waiting)show("inbox");
+  stop(inboxUnsub);inboxUnsub=A.listenInbox(myId,renderInbox);
+  A.getProfile(myId,true).then(p=>{me={name:p.name||n,bio:p.bio||"",photo:p.photo||""};renderProfile();paintNav()});
+}
+function leave(){stopTyping();stopDmWatch();stopSeenWatch();stop(inboxUnsub);stop(unsub);inboxUnsub=unsub=null;name="";myId="";cur=null;me={name:"",bio:"",photo:""};paintNav();renderInbox([]);show("home")}
+$("go").onclick=submitAuth;
+$("nm").onkeydown=$("pw").onkeydown=$("pw2").onkeydown=e=>{if(e.key==="Enter")submitAuth()};
+$("cancel").onclick=()=>$("join").classList.add("hide");
+$("pLogout").onclick=()=>A.logout();
+
+$("shareBtn").onclick=()=>{
+  if(navigator.share)navigator.share({title:"Safe Chat",text:"Chat with me on Safe Chat!",url:LINK}).catch(()=>{});
+  $("lnk").value=LINK;$("share").classList.remove("hide");
+};
+$("close").onclick=()=>$("share").classList.add("hide");
+$("copy").onclick=()=>{
+  $("lnk").select();
+  const done=()=>$("copy").textContent="Copied ✓";
+  try{navigator.clipboard.writeText(LINK).then(done,()=>{document.execCommand("copy");done()})}catch(e){try{document.execCommand("copy");done()}catch(x){}}
+};
+
+function fmt(t){const d=new Date(t||0),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):d.toLocaleDateString([],{day:"numeric",month:"short"})}
+function row(title,sub,time,letter,fn,uid,unread){
+  const r=el("button","row"),b=el("div","rb");
+  b.append(el("div","rt",title),el("div","rs",sub));
+  r.append(avFor(uid,letter),b);
+  if(time)r.append(el("div","rtime",time));
+  if(unread){r.classList.add("unread");r.append(el("div","dot"))}
+  r.onclick=fn;return r;
+}
+const inboxSeen={},seenWatch={};let lastInbox=[];
+function short(t){const d=Date.now()-t;if(d<60000)return "now";if(d<3600000)return Math.floor(d/60000)+"m";if(d<86400000)return Math.floor(d/3600000)+"h";if(d<604800000)return Math.floor(d/86400000)+"d";return new Date(t).toLocaleDateString([],{day:"numeric",month:"short"})}
+function stopSeenWatch(){Object.keys(seenWatch).forEach(k=>{stop(seenWatch[k]);delete seenWatch[k];delete inboxSeen[k]})}
+function renderInbox(items){
+  lastInbox=items||[];
+  const box=$("rows"),keep=box.scrollTop;box.textContent="";
+  items=lastInbox.slice().sort((a,b)=>(b.t||0)-(a.t||0));
+  let any=false;
+  box.appendChild(row("Everyone","Group chat for all users","","#",()=>openThread({type:"pub"})));
+  items.forEach(c=>{
+    const mine=c.from?c.from===myId:(c.last||"").startsWith("You: ");
+    const un=!mine&&(c.t||0)>(c.seenT||0)&&!(cur&&cur.cid===c.cid);
+    if(un)any=true;
+    let sub;
+    if(mine){
+      if(c.withUid&&!seenWatch[c.cid]){seenWatch[c.cid]=1;seenWatch[c.cid]=A.listenSeen(c.cid,c.withUid,v=>{inboxSeen[c.cid]=v;renderInbox(lastInbox)})}
+      const sv=inboxSeen[c.cid];
+      sub=(sv&&sv.t>=(c.t||0))?"Seen"+(sv.at?" "+ago(sv.at):""):"Sent "+ago(c.t||0);
+    }else sub=(c.last||"")+" · "+short(c.t||0);
+    box.appendChild(row(c.with||"User",sub,"",(c.with||"?")[0].toUpperCase(),()=>openThread({type:"dm",cid:c.cid,with:c.with,uid:c.withUid}),c.withUid,un));
+  });
+  $("tChat").classList.toggle("unr",any);
+  if(!items.length)box.appendChild(el("div","empty","No direct messages yet. Search a username above to start a chat."));
+  box.scrollTop=keep;
+}
+function ago(t){const d=Date.now()-t;if(d<60000)return "just now";if(d<3600000)return Math.floor(d/60000)+"m ago";if(d<86400000)return Math.floor(d/3600000)+"h ago";return new Date(t).toLocaleDateString([],{day:"numeric",month:"short"})}
+renderInbox([]);
+
+function stopDmWatch(){stop(typUnsub);stop(seenUnsub);typUnsub=seenUnsub=null;otherSeen={t:0,at:0};otherTyping=false;mySeenSent=0;lastItems=[]}
+function stopTyping(){clearTimeout(typTimer);if(typOn&&cur&&cur.type==="dm")A.setTyping(cur.cid,false);typOn=false}
+function openThread(t){
+  stopTyping();stopDmWatch();
+  cur=t;limit=50;older=false;
+  $("tName").textContent=t.type==="pub"?"Everyone":t.with;
+  $("tAv").textContent=t.type==="pub"?"#":t.with[0].toUpperCase();setAv($("tAv"),"");
+  if(t.type==="dm")A.getProfile(t.uid).then(p=>{if(p&&p.photo&&cur===t){setAv($("tAv"),p.photo);$("tAv").textContent=""}});
+  $("list").textContent="";show("thread");listen();
+  if(t.type==="dm"){
+    typUnsub=A.listenTyping(t.cid,t.uid,v=>{otherTyping=v;renderMsgs(lastItems,lastMore,false)});
+    seenUnsub=A.listenSeen(t.cid,t.uid,v=>{otherSeen=v;renderMsgs(lastItems,lastMore,false)});
+  }
+}
+function listen(){
+  stop(unsub);
+  const cb=items=>{const keep=older;older=false;renderMsgs(items,items.length>=limit,keep)};
+  unsub=cur.type==="pub"?A.listenPublic(limit,cb):A.listenDM(cur.cid,limit,cb);
+}
+$("back").onclick=()=>{stopTyping();stopDmWatch();stop(unsub);unsub=null;cur=null;show("inbox")};
+
+function renderMsgs(items,more,keepPos){
+  lastItems=items;lastMore=more;
+  const list=$("list"),atBottom=list.scrollHeight-list.scrollTop-list.clientHeight<80,prevH=list.scrollHeight;
+  list.textContent="";
+  if(!items.length){list.appendChild(el("div","empty","No messages yet. Say hi 👋"));return}
+  if(more){const b=el("button","btn","Load older messages");b.id="older";b.onclick=()=>{limit+=50;older=true;listen()};list.appendChild(b)}
+  let last="";
+  items.forEach(x=>{
+    const dt=new Date(x.t||0),ds=dt.toLocaleDateString([],{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+    if(ds!==last){list.appendChild(el("div","d",ds));last=ds}
+    const me=x.uid===myId,m=el("div","m"+(me?" me":""));
+    if(cur.type==="pub"&&!me)m.appendChild(el("div","n",x.name||"Friend"));
+    m.append(el("div","",x.text||""),el("div","t",new Date(x.t||0).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})));
+    list.appendChild(m);
+  });
+  if(cur&&cur.type==="dm"){
+    const last=items[items.length-1];
+    if(last&&last.uid===myId){
+      const st=el("div","st");
+      if(otherSeen.t>=last.t){st.append(avFor(cur.uid,(cur.with||"?")[0].toUpperCase()),document.createTextNode("Seen"+(otherSeen.at?" "+ago(otherSeen.at):"")))}
+      else st.textContent="Sent";
+      list.appendChild(st);
+    }
+    if(otherTyping)list.appendChild(el("div","m typing","typing…"));
+    const mx=items.reduce((a,x)=>Math.max(a,x.t||0),0);
+    if(mx>mySeenSent&&!document.hidden){mySeenSent=mx;A.markSeen(cur.cid,mx)}
+  }
+  if(keepPos)list.scrollTop=list.scrollHeight-prevH;else if(atBottom||!prevH)list.scrollTop=list.scrollHeight;
+}
+
+$("sf").onsubmit=async ev=>{
+  ev.preventDefault();
+  const v=$("q").value.trim().replace(/^@/,"");$("qerr").textContent="";
+  if(!v)return;
+  if(key(v)===key(name)){$("qerr").textContent="That's you!";return}
+  let u=null;try{u=await A.findUser(key(v))}catch(e){}
+  if(!u){$("qerr").textContent="No user found with that username.";return}
+  $("q").value="";
+  const cid=[myId,u.uid].sort().join("_");
+  await A.ensureDM(cid,myId,u.uid);
+  openThread({type:"dm",cid,with:u.name,uid:u.uid});
+};
+$("f").onsubmit=ev=>{
+  ev.preventDefault();
+  const inp=$("msg"),v=inp.value.trim();
+  if(!v||!name||!cur)return;
+  stopTyping();
+  inp.value="";
+  const m={text:v,name,uid:myId,t:Date.now()};
+  const p=cur.type==="pub"?A.sendPublic(m):A.sendDM(cur.cid,m,{myId,myName:name,otherUid:cur.uid,otherName:cur.with});
+  Promise.resolve(p).catch(()=>alert("Message failed. Check your access or Firebase rules."));
+};
+
+$("pShare").onclick=()=>$("shareBtn").onclick();
+async function saveMe(patch){me={...me,...patch};try{await A.saveProfile(me);return ""}catch(e){return "Could not save. Check the Firebase rules."}}
+$("editBtn").onclick=()=>{renderProfile();$("eErr").textContent="";$("ef").classList.toggle("hide")};
+$("ef").onsubmit=async ev=>{
+  ev.preventDefault();
+  const e=await saveMe({name:$("eName").value.trim()||name,bio:$("eBio").value.trim()});
+  $("eErr").textContent=e;if(!e){$("ef").classList.add("hide");renderProfile()}
+};
+$("file").onchange=ev=>{
+  const f=ev.target.files[0];ev.target.value="";if(!f)return;
+  const img=new Image(),url=URL.createObjectURL(f);
+  img.onload=async()=>{
+    const c=document.createElement("canvas"),S=128,m=Math.min(img.width,img.height);
+    c.width=c.height=S;c.getContext("2d").drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);
+    URL.revokeObjectURL(url);
+    const e=await saveMe({photo:c.toDataURL("image/jpeg",0.8)});
+    if(e)alert(e);renderProfile();paintNav();
+  };
+  img.onerror=()=>alert("Could not read that image.");
+  img.src=url;
+};
+$("pf").onsubmit=async ev=>{
+  ev.preventDefault();
+  const c=$("cp").value,n=$("np").value,n2=$("np2").value,out=$("pErr");out.textContent="";
+  if(!c){out.textContent="Enter your current password.";return}
+  if(n.length<6){out.textContent="New password must be at least 6 characters.";return}
+  if(n!==n2){out.textContent="New passwords do not match.";return}
+  const e=await A.changePassword(c,n);
+  out.textContent=e||"Password updated ✓";
+  if(!e){$("cp").value="";$("np").value="";$("np2").value=""}
+};
+$("msg").oninput=()=>{
+  if(!cur||cur.type!=="dm")return;
+  if(!typOn){typOn=true;A.setTyping(cur.cid,true)}
+  clearTimeout(typTimer);typTimer=setTimeout(stopTyping,2500);
+};
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&cur&&cur.type==="dm")renderMsgs(lastItems,lastMore,false)});
+(()=>{
+  if(firebaseConfig.apiKey==="PASTE_HERE"){bootErr="Firebase is not configured yet. Open index.html and paste your config (see README).";return}
+  try{
+    const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getDatabase(app);
+    onAuthStateChanged(auth,u=>{if(!busy)handleUser(u)});
+  }catch(e){bootErr="Could not connect. Check your Firebase config."}
+})();
+</script>
+</body>
+</html>

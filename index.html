@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Safe Chat – Private real-time chat</title>
+<style>
+:root{--bg:#000;--card:#0a0a0a;--panel:#1a1a1a;--text:#fff;--mute:#9a9a9a;--line:#262626;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font-family:inherit;color:inherit}
+.logo{width:26px;height:26px;flex:none}
+.app{height:100%;max-width:900px;margin:0 auto;display:flex;flex-direction:column;border-left:1px solid var(--line);border-right:1px solid var(--line);box-sizing:border-box}
+.pages{flex:1;position:relative;min-height:0}
+.page{position:absolute;inset:0;display:flex;flex-direction:column;min-height:0}
+.hide{display:none!important}
+.btn{background:none;border:1px solid #444;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.btn.p{background:#fff;border-color:#fff;color:#000}
+.btn:disabled{opacity:.5}
+nav{display:flex;border-top:1px solid var(--line);background:#000}
+nav button{flex:1;background:none;border:0;padding:9px 0 8px;display:flex;flex-direction:column;align-items:center;gap:3px;color:#777;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+nav button svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linejoin:round;stroke-linecap:round}
+nav button.on{color:#fff}
+nav button.on svg{fill:#fff;stroke:#fff}
+nav button.on svg .k{stroke:#000}
+/* home */
+#home{background:radial-gradient(ellipse at 75% 15%,#3a3a3a 0%,#111 38%,#000 70%);overflow:hidden}
+#home::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.035) 0 2px,transparent 2px 14px);pointer-events:none}
+#home>*{position:relative}
+.htop{display:flex;align-items:center;gap:10px;padding:18px 22px 0;font-weight:800;letter-spacing:.22em;font-size:13px;text-transform:uppercase}
+.hero{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 22px 26px}
+.tag{font-size:12px;letter-spacing:.28em;color:var(--mute);text-transform:uppercase;margin-bottom:10px}
+.hero h1{margin:0;font-family:Impact,"Arial Narrow Bold","Helvetica Neue",Arial,sans-serif;font-weight:900;text-transform:uppercase;font-size:clamp(84px,26vw,220px);line-height:.82}
+.hero h1 span{display:block}.hero h1 span+span{-webkit-text-stroke:2px #fff;color:transparent}
+.sub{margin:18px 0 22px;max-width:420px;color:#c8c8c8;font-size:15px;line-height:1.5}
+#enter{align-self:flex-start;padding:13px 26px;font-size:14px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.strip{border-top:3px solid #fff;padding:12px 22px;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#cfcfcf}
+.strip i{font-style:normal;color:#666}
+/* inbox */
+.top{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.who{background:none;border:0;font-size:20px;font-weight:800;flex:1;text-align:left;cursor:pointer;padding:0}
+.sf{display:flex;gap:8px;padding:12px 16px 4px}
+input{flex:1;min-width:0;font-size:16px;padding:10px 16px;border-radius:22px;border:1px solid #333;background:var(--panel);color:#fff;outline:none;box-sizing:border-box}
+input:focus{border-color:#fff}
+.qerr{padding:2px 18px;font-size:13px;min-height:16px;color:#fff;font-weight:600}
+.h2{padding:6px 16px 4px;font-weight:700;font-size:15px}
+#rows{flex:1;overflow-y:auto}
+.row{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:10px 16px;text-align:left;cursor:pointer}
+.row:active{background:#111}
+.av{width:46px;height:46px;border-radius:50%;background:#222;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;box-sizing:border-box}
+.rb{flex:1;min-width:0}.rt{font-weight:700;font-size:15px}.rs{color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtime{font-size:12px;color:var(--mute)}
+.empty{margin:auto;padding:24px;color:var(--mute);text-align:center;font-size:14px}
+/* thread */
+.back{background:none;border:0;font-size:32px;line-height:1;padding:0 6px 4px 0;cursor:pointer}
+.top .av{width:36px;height:36px;font-size:14px}
+#list{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:4px}
+.m{max-width:75%;padding:9px 14px;border-radius:20px;background:var(--panel);align-self:flex-start;overflow-wrap:anywhere}
+.m.me{align-self:flex-end;background:#fff;color:#000}
+.n{font-size:11px;color:var(--mute);margin-bottom:2px}.m.me .n{color:#555}
+.t{font-size:10px;opacity:.55;text-align:right;margin-top:2px}
+.d{align-self:center;font-size:11px;color:var(--mute);margin:8px 0;letter-spacing:.1em;text-transform:uppercase}
+#older{align-self:center}
+#f{display:flex;gap:8px;align-items:center;padding:10px 12px;border-top:1px solid var(--line)}
+#f button{background:none;border:0;font-weight:800;font-size:15px;padding:8px;cursor:pointer}
+/* overlays */
+.ov{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;z-index:50;text-align:center}
+.ov.sm{background:rgba(0,0,0,.8)}
+.box{background:var(--card);border:1px solid #444;border-radius:16px;padding:20px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px;box-sizing:border-box}
+.ov h1{margin:0;font-size:26px;letter-spacing:.14em;text-transform:uppercase}.ov p{margin:0;color:var(--mute);font-size:14px}
+#err{color:#fff;font-size:13px;min-height:16px;font-weight:600}
+.tabs{display:flex;border:1px solid #444;border-radius:22px;overflow:hidden}
+.tabs button{background:none;border:0;padding:9px 18px;font-size:13px;font-weight:700;color:#777;cursor:pointer}
+.tabs button.on{background:#fff;color:#000}
+.who{cursor:default}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="pages">
+  <section class="page" id="home">
+   <div class="htop"><svg class="logo" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"><path d="M12 2.5l8 3v6c0 5-3.4 8.4-8 10-4.6-1.6-8-5-8-10v-6z"/><path d="M8.5 12l2.4 2.4 4.6-4.8"/></svg>Safe Chat</div>
+   <div class="hero">
+    <div class="tag">Private · Real-time · Simple</div>
+    <h1><span>Safe</span><span>Chat</span></h1>
+    <p class="sub">Message your friends one-to-one, like Instagram. Pick a unique username, search a friend, and your chats are always saved.</p>
+    <button class="btn p" id="enter">Open chat →</button>
+   </div>
+   <div class="strip">Direct messages <i>|</i> Unique usernames <i>|</i> Chat history <i>|</i> Share link</div>
+  </section>
+  <section class="page hide" id="inbox">
+   <div class="top"><div class="who" id="who">@username</div><button class="btn" id="shareBtn">Share</button><button class="btn" id="logout">Log out</button></div>
+   <form class="sf" id="sf"><input id="q" maxlength="20" placeholder="Search username to message" autocomplete="off" autocapitalize="off"><button class="btn p" type="submit">Message</button></form>
+   <div class="qerr" id="qerr"></div>
+   <div class="h2">Messages</div>
+   <div id="rows"></div>
+  </section>
+  <section class="page hide" id="thread">
+   <div class="top"><button class="back" id="back">‹</button><div class="av" id="tAv"></div><b id="tName"></b></div>
+   <div id="list"></div>
+   <form id="f"><input id="msg" maxlength="500" placeholder="Message…" autocomplete="off"><button type="submit">Send</button></form>
+  </section>
+ </div>
+ <nav id="nav">
+  <button id="tHome" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10h-6v-6H9v6H3z"/></svg>Home</button>
+  <button id="tChat"><svg viewBox="0 0 24 24"><path d="M21 3L3 10l7 4 4 7z"/><path class="k" d="M21 3L10 14"/></svg>Chat</button>
+ </nav>
+</div>
+<div class="ov hide" id="join">
+ <h1>Safe Chat</h1>
+ <div class="tabs"><button id="tLogin" class="on">Log in</button><button id="tSign">Create account</button></div>
+ <div class="box">
+  <input id="nm" maxlength="20" placeholder="Username (3–20 letters, numbers, _)" autocomplete="username" autocapitalize="off">
+  <input id="pw" type="password" maxlength="64" placeholder="Password (min 6 characters)" autocomplete="current-password">
+  <input id="pw2" class="hide" type="password" maxlength="64" placeholder="Confirm password" autocomplete="new-password">
+  <div id="err"></div>
+  <button class="btn p" id="go" style="padding:11px">Log in</button>
+  <button class="btn" id="cancel">Cancel</button>
+ </div>
+</div>
+<div class="ov sm hide" id="share">
+ <div class="box">
+  <b>Share this app</b>
+  <p>Send this link to your friends.</p>
+  <input id="lnk" readonly>
+  <button class="btn p" id="copy" style="padding:11px">Copy link</button>
+  <button class="btn" id="close">Close</button>
+ </div>
+</div>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,updateProfile,onAuthStateChanged} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getDatabase,ref,push,set,get,onValue,query,orderByChild,limitToLast,runTransaction} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// ====== PASTE YOUR FIREBASE CONFIG HERE (see README.md) ======
+const firebaseConfig = {
+  apiKey: "AIzaSyDChShtwoWzKpxc6d-KnwRg2tZgX5y200M",
+  authDomain: "safe-chat-7a681.firebaseapp.com",
+  databaseURL: "https://safe-chat-7a681-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "safe-chat-7a681",
+  appId: "1:184130790897:web:0dcc623fb572932b9bd050"
+};
+// =============================================================
+
+const LINK=location.href.split("#")[0];
+let db=null;
+const lst=(s)=>{const i=[];s.forEach(c=>{i.push(c.val())});return i};
+let auth=null,busy=false;
+const emailOf=n=>n.toLowerCase()+"@safechat.app";
+async function handleUser(u){
+  if(u&&!u.isAnonymous){
+    myId=u.uid;const n=u.displayName||(u.email||"").split("@")[0];
+    set(ref(db,"usernames/"+n.toLowerCase()),{uid:u.uid,name:n}).catch(()=>{});
+    enter(n);
+  }else if(u){await signOut(auth)}
+  else if(name)leave();
+}
+const A={
+  signup:async(n,p)=>{
+    if(!db)return bootErr||"Not connected. Check your Firebase config.";
+    busy=true;let c=null;
+    try{
+      c=await createUserWithEmailAndPassword(auth,emailOf(n),p);
+      try{await set(ref(db,"usernames/"+n.toLowerCase()),{uid:c.user.uid,name:n})}
+      catch(e){await c.user.delete().catch(()=>{});busy=false;return "That username is already taken."}
+      await updateProfile(c.user,{displayName:n});
+      busy=false;await handleUser(auth.currentUser);return "";
+    }catch(e){
+      busy=false;
+      if(e.code==="auth/email-already-in-use")return "That username is already taken.";
+      if(e.code==="auth/weak-password")return "Password is too weak (min 6 characters).";
+      if(e.code==="auth/operation-not-allowed")return "Email/Password sign-in is not enabled in Firebase.";
+      return "Could not create account ("+(e.code||"error")+").";
+    }
+  },
+  login:async(n,p)=>{
+    if(!db)return bootErr||"Not connected. Check your Firebase config.";
+    busy=true;
+    try{await signInWithEmailAndPassword(auth,emailOf(n),p);busy=false;await handleUser(auth.currentUser);return ""}
+    catch(e){
+      busy=false;
+      if(["auth/invalid-credential","auth/user-not-found","auth/wrong-password"].includes(e.code))return "Wrong username or password.";
+      if(e.code==="auth/too-many-requests")return "Too many attempts. Try again later.";
+      if(e.code==="auth/operation-not-allowed")return "Email/Password sign-in is not enabled in Firebase.";
+      return "Could not log in ("+(e.code||"error")+").";
+    }
+  },
+  logout:()=>signOut(auth),
+  findUser:async k=>{const s=await get(ref(db,"usernames/"+k));return s.exists()?s.val():null},
+  ensureDM:async(cid,me,other)=>{try{await set(ref(db,"dms/"+cid+"/meta"),{a:me,b:other})}catch(e){}},
+  listenPublic:(n,cb)=>onValue(query(ref(db,"messages"),orderByChild("t"),limitToLast(n)),s=>cb(lst(s)),()=>{}),
+  listenDM:(cid,n,cb)=>onValue(query(ref(db,"dms/"+cid+"/msgs"),orderByChild("t"),limitToLast(n)),s=>cb(lst(s)),()=>{}),
+  sendPublic:m=>push(ref(db,"messages"),m),
+  sendDM:async(cid,m,x)=>{
+    await push(ref(db,"dms/"+cid+"/msgs"),m);
+    const l=m.text.slice(0,60),t=m.t;
+    await Promise.all([
+      set(ref(db,"inbox/"+x.myId+"/"+cid),{cid,with:x.otherName,withUid:x.otherUid,last:"You: "+l,t}),
+      set(ref(db,"inbox/"+x.otherUid+"/"+cid),{cid,with:x.myName,withUid:x.myId,last:l,t})
+    ]);
+  },
+  listenInbox:(id,cb)=>onValue(ref(db,"inbox/"+id),s=>cb(lst(s)),()=>{})
+};
+
+const $=i=>document.getElementById(i);
+const ls=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||"";localStorage.setItem(k,v)}catch(e){return ""}};
+const key=n=>n.toLowerCase();
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!==undefined)e.textContent=x;return e};
+const stop=f=>{if(typeof f==="function")f()};
+let name="",myId="",limit=50,unsub=null,inboxUnsub=null,cur=null,older=false,bootErr="";
+
+function show(v){
+  ["home","inbox","thread"].forEach(p=>$(p).classList.toggle("hide",p!==v));
+  $("tHome").classList.toggle("on",v==="home");$("tChat").classList.toggle("on",v!=="home");
+  $("nav").classList.toggle("hide",v==="thread");
+}
+function openJoin(){setMode("login");$("err").textContent=bootErr;$("join").classList.remove("hide")}
+function goChat(){if(!name){openJoin();return}show("inbox")}
+$("tHome").onclick=()=>show("home");
+$("tChat").onclick=goChat;
+$("enter").onclick=goChat;
+
+let mode="login";
+function setMode(m){
+  mode=m;$("tLogin").classList.toggle("on",m==="login");$("tSign").classList.toggle("on",m==="sign");
+  $("pw2").classList.toggle("hide",m!=="sign");$("go").textContent=m==="sign"?"Create account":"Log in";
+  $("pw").autocomplete=m==="sign"?"new-password":"current-password";$("err").textContent="";
+}
+$("tLogin").onclick=()=>setMode("login");
+$("tSign").onclick=()=>setMode("sign");
+async function submitAuth(){
+  const v=$("nm").value.trim(),p=$("pw").value;$("err").textContent="";
+  if(!/^[a-zA-Z0-9_]{3,20}$/.test(v)){$("err").textContent="Username: 3–20 letters, numbers or underscores.";return}
+  if(p.length<6){$("err").textContent="Password must be at least 6 characters.";return}
+  if(mode==="sign"&&p!==$("pw2").value){$("err").textContent="Passwords do not match.";return}
+  $("go").disabled=true;
+  const e=mode==="sign"?await A.signup(v,p):await A.login(v,p);
+  $("go").disabled=false;
+  if(e){$("err").textContent=e;return}
+  $("pw").value="";$("pw2").value="";show("inbox");
+}
+function enter(n){
+  name=n;$("who").textContent="@"+n;
+  const waiting=!$("join").classList.contains("hide");
+  $("join").classList.add("hide");if(waiting)show("inbox");
+  stop(inboxUnsub);inboxUnsub=A.listenInbox(myId,renderInbox);
+}
+function leave(){stop(inboxUnsub);stop(unsub);inboxUnsub=unsub=null;name="";myId="";cur=null;renderInbox([]);show("home")}
+$("go").onclick=submitAuth;
+$("nm").onkeydown=$("pw").onkeydown=$("pw2").onkeydown=e=>{if(e.key==="Enter")submitAuth()};
+$("cancel").onclick=()=>$("join").classList.add("hide");
+$("logout").onclick=()=>A.logout();
+
+$("shareBtn").onclick=()=>{
+  if(navigator.share)navigator.share({title:"Safe Chat",text:"Chat with me on Safe Chat!",url:LINK}).catch(()=>{});
+  $("lnk").value=LINK;$("share").classList.remove("hide");
+};
+$("close").onclick=()=>$("share").classList.add("hide");
+$("copy").onclick=()=>{
+  $("lnk").select();
+  const done=()=>$("copy").textContent="Copied ✓";
+  try{navigator.clipboard.writeText(LINK).then(done,()=>{document.execCommand("copy");done()})}catch(e){try{document.execCommand("copy");done()}catch(x){}}
+};
+
+function fmt(t){const d=new Date(t||0),n=new Date();return d.toDateString()===n.toDateString()?d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}):d.toLocaleDateString([],{day:"numeric",month:"short"})}
+function row(title,sub,time,letter,fn){
+  const r=el("button","row"),b=el("div","rb");
+  b.append(el("div","rt",title),el("div","rs",sub));
+  r.append(el("div","av",letter),b);
+  if(time)r.append(el("div","rtime",time));
+  r.onclick=fn;return r;
+}
+function renderInbox(items){
+  const box=$("rows");box.textContent="";
+  items=(items||[]).slice().sort((a,b)=>(b.t||0)-(a.t||0));
+  box.appendChild(row("Everyone","Group chat for all users","","#",()=>openThread({type:"pub"})));
+  items.forEach(c=>box.appendChild(row(c.with||"User",c.last||"",fmt(c.t),(c.with||"?")[0].toUpperCase(),()=>openThread({type:"dm",cid:c.cid,with:c.with,uid:c.withUid}))));
+  if(!items.length)box.appendChild(el("div","empty","No direct messages yet. Search a username above to start a chat."));
+}
+renderInbox([]);
+
+function openThread(t){
+  cur=t;limit=50;older=false;
+  $("tName").textContent=t.type==="pub"?"Everyone":t.with;
+  $("tAv").textContent=t.type==="pub"?"#":t.with[0].toUpperCase();
+  $("list").textContent="";show("thread");listen();
+}
+function listen(){
+  stop(unsub);
+  const cb=items=>{const keep=older;older=false;renderMsgs(items,items.length>=limit,keep)};
+  unsub=cur.type==="pub"?A.listenPublic(limit,cb):A.listenDM(cur.cid,limit,cb);
+}
+$("back").onclick=()=>{stop(unsub);unsub=null;cur=null;show("inbox")};
+
+function renderMsgs(items,more,keepPos){
+  const list=$("list"),atBottom=list.scrollHeight-list.scrollTop-list.clientHeight<80,prevH=list.scrollHeight;
+  list.textContent="";
+  if(!items.length){list.appendChild(el("div","empty","No messages yet. Say hi 👋"));return}
+  if(more){const b=el("button","btn","Load older messages");b.id="older";b.onclick=()=>{limit+=50;older=true;listen()};list.appendChild(b)}
+  let last="";
+  items.forEach(x=>{
+    const dt=new Date(x.t||0),ds=dt.toLocaleDateString([],{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+    if(ds!==last){list.appendChild(el("div","d",ds));last=ds}
+    const me=x.uid===myId,m=el("div","m"+(me?" me":""));
+    if(cur.type==="pub"&&!me)m.appendChild(el("div","n",x.name||"Friend"));
+    m.append(el("div","",x.text||""),el("div","t",new Date(x.t||0).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})));
+    list.appendChild(m);
+  });
+  if(keepPos)list.scrollTop=list.scrollHeight-prevH;else if(atBottom||!prevH)list.scrollTop=list.scrollHeight;
+}
+
+$("sf").onsubmit=async ev=>{
+  ev.preventDefault();
+  const v=$("q").value.trim().replace(/^@/,"");$("qerr").textContent="";
+  if(!v)return;
+  if(key(v)===key(name)){$("qerr").textContent="That's you!";return}
+  let u=null;try{u=await A.findUser(key(v))}catch(e){}
+  if(!u){$("qerr").textContent="No user found with that username.";return}
+  $("q").value="";
+  const cid=[myId,u.uid].sort().join("_");
+  await A.ensureDM(cid,myId,u.uid);
+  openThread({type:"dm",cid,with:u.name,uid:u.uid});
+};
+$("f").onsubmit=ev=>{
+  ev.preventDefault();
+  const inp=$("msg"),v=inp.value.trim();
+  if(!v||!name||!cur)return;
+  inp.value="";
+  const m={text:v,name,uid:myId,t:Date.now()};
+  const p=cur.type==="pub"?A.sendPublic(m):A.sendDM(cur.cid,m,{myId,myName:name,otherUid:cur.uid,otherName:cur.with});
+  Promise.resolve(p).catch(()=>alert("Message failed. Check your access or Firebase rules."));
+};
+
+(()=>{
+  if(firebaseConfig.apiKey==="PASTE_HERE"){bootErr="Firebase is not configured yet. Open index.html and paste your config (see README).";return}
+  try{
+    const app=initializeApp(firebaseConfig);auth=getAuth(app);db=getDatabase(app);
+    onAuthStateChanged(auth,u=>{if(!busy)handleUser(u)});
+  }catch(e){bootErr="Could not connect. Check your Firebase config."}
+})();
+</script>
+</body>
+</html>
